@@ -1,5 +1,6 @@
 main:
   port: 8080
+  schema: "http" #switch to https if you want
 repeater: 
   port: 8081
 db:

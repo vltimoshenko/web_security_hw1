@@ -25,14 +25,9 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    # volumes:
-    #    - postgres-data:/data/postgres
     ports:
       - "5432:5432"
     networks:
       - uniting_net
     restart: always
     container_name: postgres
-
-# volumes:
-#     postgres-data:
