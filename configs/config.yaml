@@ -1,0 +1,10 @@
+main:
+  port: 8080
+repeater: 
+  port: 8081
+db:
+  hostname: postgres
+  port: 5432
+  database: postgres
+  user: postgres
+  password: postgres
