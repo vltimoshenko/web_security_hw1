@@ -1,7 +1,7 @@
 version: '3'
 
-networks:
-    uniting_net:
+# networks:
+#     uniting_net:
 
 services:
 
@@ -14,8 +14,8 @@ services:
       - "8081:8081"
     depends_on:
       - postgres
-    networks:
-      - uniting_net
+    # networks:
+    #   - uniting_net
     tty: true
     stdin_open: true
     
@@ -27,7 +27,7 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
-    networks:
-      - uniting_net
+    # networks:
+    #   - uniting_net
     restart: always
-    container_name: postgres
+    # container_name: postgres

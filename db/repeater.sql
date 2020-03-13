@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS requests(
   method varchar(10),
   uri text,
   proto varchar(10),
-  body text
+  body text,
+  sch text
                                    );
 
 

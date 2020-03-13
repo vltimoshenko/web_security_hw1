@@ -16,10 +16,15 @@ import (
 type Proxy struct {
 	DB     *sqlx.DB
 	Server *http.Server
+	Schema string
 }
 
-func InitProxy(c *connector.Connector, addr string) (*Proxy, error) {
-	proxy := Proxy{}
+func InitProxy(c *connector.Connector, addr string, schema string) (*Proxy, error) {
+	if schema != "http" && schema != "https" {
+		return nil, fmt.Errorf("invalid schema")
+	}
+
+	proxy := Proxy{Schema: schema}
 
 	proxy.Server = &http.Server{
 		Addr: addr,
@@ -43,6 +48,12 @@ func InitProxy(c *connector.Connector, addr string) (*Proxy, error) {
 }
 
 func (p *Proxy) HandleTunneling(w http.ResponseWriter, r *http.Request) {
+	err := p.InsertRequest(r, r.RequestURI)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		return
+	}
+
 	dest_conn, err := net.DialTimeout("tcp", r.Host, 10*time.Second)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
@@ -83,7 +94,6 @@ func (p *Proxy) HandleHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	defer resp.Body.Close()
-	println("handleHTTP")
 	p.copyHeader(w.Header(), resp.Header)
 	w.WriteHeader(resp.StatusCode)
 	io.Copy(w, resp.Body)
@@ -97,22 +107,18 @@ func (p *Proxy) copyHeader(dst, src http.Header) {
 	}
 }
 
-const insertRequest = `
-INSERT INTO requests(method, uri, proto) VALUES($1, $2, $3) RETURNING id`
-
-const insertHeader = `
-INSERT INTO headers(req_id, key, value) VALUES($1, $2, $3)`
-
 func (p *Proxy) InsertRequest(r *http.Request, uri string) error {
 	var id int
-	err := p.DB.QueryRow(insertRequest, r.Method, uri, r.Proto).Scan(&id)
+	err := p.DB.QueryRow("INSERT INTO requests(method, uri, proto, sch) VALUES($1, $2, $3, $4) RETURNING id",
+		r.Method, uri, r.Proto, p.Schema).Scan(&id)
 	if err != nil {
 		fmt.Printf("InsertRequest %s\n", err.Error())
 		return err
 	}
 
 	for key, value := range r.Header {
-		_, err := p.DB.Exec(insertHeader, id, key, value[0])
+		_, err := p.DB.Exec("INSERT INTO headers(req_id, key, value) VALUES($1, $2, $3)",
+			id, key, value[0])
 		if err != nil {
 			fmt.Printf("InsertRequest %s\n", err.Error())
 			return err

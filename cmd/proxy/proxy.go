@@ -42,7 +42,7 @@ func main() {
 		DBMaxConns:     viper.GetInt("db.max_conns"),
 	}
 
-	p, err := proxy.InitProxy(&c, ":"+strconv.Itoa(viper.GetInt("main.port")))
+	p, err := proxy.InitProxy(&c, ":"+strconv.Itoa(viper.GetInt("main.port")), proto)
 	if err != nil {
 		log.Fatalf("Fatal error proxy initialization: %s", err)
 	}

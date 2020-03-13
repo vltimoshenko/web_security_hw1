@@ -10,4 +10,4 @@ COPY . .
 RUN go mod download
 
 
-CMD go run cmd/main/main.go  & go run cmd/repeater/repeater.go
+CMD go run cmd/proxy/proxy.go  & go run cmd/repeater/repeater.go
